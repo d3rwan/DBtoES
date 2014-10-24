@@ -13,13 +13,13 @@ import com.github.d3rwan.toes.processors.AbstractESItemProcessor;
  */
 public class PersonItemProcessor extends AbstractESItemProcessor<Person> {
 
-	@Override
-	public ESDocument process(Person item) throws Exception {
-		ESDocument document = new ESDocument();
-		document.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
-		document.setType(environment.getProperty(Constants.CONFIG_ES_TYPE));
-		document.setId(item.getId());
-		document.setSource(mapper.writeValueAsString(item));
-		return document;
-	}
+    @Override
+    public ESDocument process(Person item) throws Exception {
+        ESDocument document = new ESDocument();
+        document.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
+        document.setType(environment.getProperty(Constants.CONFIG_ES_TYPE));
+        document.setId(item.getId());
+        document.setSource(mapper.writeValueAsString(item));
+        return document;
+    }
 }

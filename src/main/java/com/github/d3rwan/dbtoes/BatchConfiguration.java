@@ -29,168 +29,174 @@ import com.github.d3rwan.toes.tasklets.DeleteIndexESTasklet;
 import com.github.d3rwan.toes.tasklets.PutMappingESTasklet;
 import com.github.d3rwan.toes.writers.ESItemWriter;
 
+/**
+ * Batch configuration
+ * 
+ * @author d3rwan
+ * 
+ */
 @Configuration
 @Import({DatabaseConfig.class, ESConfig.class})
 @EnableBatchProcessing
 public class BatchConfiguration {
 
-	/** environment */
-	@Autowired
-	private Environment environment;
+    /** environment */
+    @Autowired
+    private Environment environment;
 
-	/** session factory */
-	@Autowired
-	private SessionFactory sessionFactory;
+    /** session factory */
+    @Autowired
+    private SessionFactory sessionFactory;
 
-	/** ES client */
-	@Autowired
-	private Client esClient;
+    /** ES client */
+    @Autowired
+    private Client esClient;
 
-	/** Job builder factory */
-	@Autowired
-	private JobBuilderFactory jobBuilderFactory;
+    /** Job builder factory */
+    @Autowired
+    private JobBuilderFactory jobBuilderFactory;
 
-	/** Step builder factory */
-	@Autowired
-	private StepBuilderFactory stepBuilderFactory;
+    /** Step builder factory */
+    @Autowired
+    private StepBuilderFactory stepBuilderFactory;
 
-	/**
-	 * Job : Import user from DB into ES
-	 * @param jobBuilderFactory factory
-	 * @param step1 step to add
-	 * @return Job
-	 */
-	@Bean
-	public Job indexPersonJob() {
-		return jobBuilderFactory.get("indexPersonJob")
-				.start(step1())
-				.next(step2())
-				.next(step3())
-				.next(step4())
-				.next(step5())
-				.next(step6())
-				.build();
-	}
+    /**
+     * Job : Import user from DB into ES
+     * @param jobBuilderFactory factory
+     * @param step1 step to add
+     * @return Job
+     */
+    @Bean
+    public Job indexPersonJob() {
+        return jobBuilderFactory.get("indexPersonJob")
+                .start(step1())
+                .next(step2())
+                .next(step3())
+                .next(step4())
+                .next(step5())
+                .next(step6())
+                .build();
+    }
 
-	/**
-	 * Step 1 : Delete index if already exist
-	 * @return Step
-	 */
-	@Bean
-	public Step step1() {
-		DeleteIndexESTasklet deleteIndexIfAlreadyExist = new DeleteIndexESTasklet();
-		deleteIndexIfAlreadyExist.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
-		deleteIndexIfAlreadyExist.setEsClient(esClient);
-	    return stepBuilderFactory.get("step1")
-	    		.tasklet(deleteIndexIfAlreadyExist)
-	    		.build();
-	}
+    /**
+     * Step 1 : Delete index if already exist
+     * @return Step
+     */
+    @Bean
+    public Step step1() {
+        DeleteIndexESTasklet deleteIndexIfAlreadyExist = new DeleteIndexESTasklet();
+        deleteIndexIfAlreadyExist.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
+        deleteIndexIfAlreadyExist.setEsClient(esClient);
+        return stepBuilderFactory.get("step1")
+                .tasklet(deleteIndexIfAlreadyExist)
+                .build();
+    }
 
-	/**
-	 * Step 2 : Create index
-	 * @return Step
-	 */
-	@Bean
-	public Step step2() {
-		CreateIndexESTasklet createIndex = new CreateIndexESTasklet();
-		createIndex.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
-		createIndex.setEsClient(esClient);
-		createIndex.setSettings(new ClassPathResource(
-				environment.getProperty(Constants.CONFIG_ES_SETTINGS_FILENAME)));
-	    return stepBuilderFactory.get("step2")
-	    		.tasklet(createIndex)
-	    		.build();
-	}
+    /**
+     * Step 2 : Create index
+     * @return Step
+     */
+    @Bean
+    public Step step2() {
+        CreateIndexESTasklet createIndex = new CreateIndexESTasklet();
+        createIndex.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
+        createIndex.setEsClient(esClient);
+        createIndex.setSettings(new ClassPathResource(
+                environment.getProperty(Constants.CONFIG_ES_SETTINGS_FILENAME)));
+        return stepBuilderFactory.get("step2")
+                .tasklet(createIndex)
+                .build();
+    }
 
-	/**
-	 * Step 3 : Put mapping
-	 * @return Step
-	 */
-	@Bean
-	public Step step3() {
-		PutMappingESTasklet putMapping = new PutMappingESTasklet();
-		putMapping.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
-		putMapping.setType(environment.getProperty(Constants.CONFIG_ES_TYPE));
-		putMapping.setEsClient(esClient);
-		putMapping.setMapping(new ClassPathResource(
-				environment.getProperty(Constants.CONFIG_ES_MAPPING_FILENAME)));
-	    return stepBuilderFactory.get("step3")
-	    		.tasklet(putMapping)
-	    		.build();
-	}
+    /**
+     * Step 3 : Put mapping
+     * @return Step
+     */
+    @Bean
+    public Step step3() {
+        PutMappingESTasklet putMapping = new PutMappingESTasklet();
+        putMapping.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
+        putMapping.setType(environment.getProperty(Constants.CONFIG_ES_TYPE));
+        putMapping.setEsClient(esClient);
+        putMapping.setMapping(new ClassPathResource(
+                environment.getProperty(Constants.CONFIG_ES_MAPPING_FILENAME)));
+        return stepBuilderFactory.get("step3")
+                .tasklet(putMapping)
+                .build();
+    }
 
-	/**
-	 * Step 4 : Read from DB, process into ESDocument, index into ES
-	 * @return Step
-	 */
-	@Bean
-	public Step step4() {
-		return stepBuilderFactory.get("step4").<Person, ESDocument> chunk(1000)
-				.reader(reader())
-				.processor(processor())
-				.writer(writer())
-				.build();
-	}
+    /**
+     * Step 4 : Read from DB, process into ESDocument, index into ES
+     * @return Step
+     */
+    @Bean
+    public Step step4() {
+        return stepBuilderFactory.get("step4").<Person, ESDocument> chunk(1000)
+                .reader(reader())
+                .processor(processor())
+                .writer(writer())
+                .build();
+    }
 
-	/**
-	 * Read into DB
-	 * @return HibernateCursorItemReader
-	 */
-	@Bean
-	public HibernateCursorItemReader<Person> reader() {
-		HibernateCursorItemReader<Person> reader = new HibernateCursorItemReader<Person>();
-		reader.setSessionFactory(sessionFactory);
-		reader.setQueryString("from Person p");
-		return reader;
-	}
+    /**
+     * Read into DB
+     * @return HibernateCursorItemReader
+     */
+    @Bean
+    public HibernateCursorItemReader<Person> reader() {
+        HibernateCursorItemReader<Person> reader = new HibernateCursorItemReader<Person>();
+        reader.setSessionFactory(sessionFactory);
+        reader.setQueryString("from Person p");
+        return reader;
+    }
 
-	/**
-	 * Process person into ESDocument
-	 * @return ItemProcessor
-	 */
-	@Bean
-	public ItemProcessor<Person, ESDocument> processor() {
-		return new PersonItemProcessor();
-	}
+    /**
+     * Process person into ESDocument
+     * @return ItemProcessor
+     */
+    @Bean
+    public ItemProcessor<Person, ESDocument> processor() {
+        return new PersonItemProcessor();
+    }
 
-	/**
-	 * Writer for ES
-	 * @param esClient ES client
-	 * @return ItemWriter
-	 */
-	@Bean
-	public ItemWriter<ESDocument> writer() {
-		ESItemWriter<ESDocument> writer = new ESItemWriter<ESDocument>(
-				esClient, environment.getProperty(Constants.CONFIG_ES_TIMEOUT));
-		return writer;
-	}
+    /**
+     * Writer for ES
+     * @param esClient ES client
+     * @return ItemWriter
+     */
+    @Bean
+    public ItemWriter<ESDocument> writer() {
+        ESItemWriter<ESDocument> writer = new ESItemWriter<ESDocument>(
+                esClient, environment.getProperty(Constants.CONFIG_ES_TIMEOUT));
+        return writer;
+    }
 
-	/**
-	 * Step 5 : Delete old index
-	 * @return Step
-	 */
-	@Bean
-	public Step step5() {
-		DeleteIndexESTasklet deleteOldIndex = new DeleteIndexESTasklet();
-		deleteOldIndex.setIndex(environment.getProperty(Constants.CONFIG_ES_ALIAS));
-		deleteOldIndex.setEsClient(esClient);
-	    return stepBuilderFactory.get("step5")
-	    		.tasklet(deleteOldIndex)
-	    		.build();
-	}
+    /**
+     * Step 5 : Delete old index
+     * @return Step
+     */
+    @Bean
+    public Step step5() {
+        DeleteIndexESTasklet deleteOldIndex = new DeleteIndexESTasklet();
+        deleteOldIndex.setIndex(environment.getProperty(Constants.CONFIG_ES_ALIAS));
+        deleteOldIndex.setEsClient(esClient);
+        return stepBuilderFactory.get("step5")
+                .tasklet(deleteOldIndex)
+                .build();
+    }
 
-	/**
-	 * Step 6 : Add alias
-	 * @return Step
-	 */
-	@Bean
-	public Step step6() {
-		AddAliasESTasklet addAlias = new AddAliasESTasklet();
-		addAlias.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
-		addAlias.setAlias(environment.getProperty(Constants.CONFIG_ES_ALIAS));
-		addAlias.setEsClient(esClient);
-	    return stepBuilderFactory.get("step6")
-	    		.tasklet(addAlias)
-	    		.build();
-	}
+    /**
+     * Step 6 : Add alias
+     * @return Step
+     */
+    @Bean
+    public Step step6() {
+        AddAliasESTasklet addAlias = new AddAliasESTasklet();
+        addAlias.setIndex(environment.getProperty(Constants.CONFIG_ES_INDEX));
+        addAlias.setAlias(environment.getProperty(Constants.CONFIG_ES_ALIAS));
+        addAlias.setEsClient(esClient);
+        return stepBuilderFactory.get("step6")
+                .tasklet(addAlias)
+                .build();
+    }
 }

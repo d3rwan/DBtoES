@@ -22,33 +22,33 @@ import com.github.d3rwan.dbtoes.exceptions.ConfigException;
 @Configuration
 public class ESConfig {
 
-	@Autowired
-	private Environment environment;
+    @Autowired
+    private Environment environment;
 
-	private TransportClient client;
+    private TransportClient client;
 
-	@Bean(destroyMethod="close")
-	public Client esClient() throws ConfigException {
-		try {
-			Settings settings = ImmutableSettings
-					.settingsBuilder().put("cluster.name", environment.getProperty(Constants.CONFIG_ES_CLUSTERNAME))
-					.build();
-			client = new TransportClient(settings);
-			String esHost = environment.getProperty(Constants.CONFIG_ES_HOST);
-			String[] hosts = esHost.split(",");
-			for (String host : hosts) {
-				String[] hostnameAndPort = host.split(":");
-				String hostname = hostnameAndPort[0];
-				Integer port = Integer.parseInt(hostnameAndPort[1]);
-				client = client.addTransportAddress(new InetSocketTransportAddress(hostname, port));
-			}
-			if (client.connectedNodes().size() == 0) {
-				throw new ConfigException(
-						"No ES nodes avalaible !! Check the config or the ES cluster. ");
-			}
-			return client;
-		} catch (Exception ex) {
-			throw new ConfigException(ex.getMessage(), ex.getCause());
-		}
-	}
+    @Bean(destroyMethod="close")
+    public Client esClient() throws ConfigException {
+        try {
+            Settings settings = ImmutableSettings
+                    .settingsBuilder().put("cluster.name", environment.getProperty(Constants.CONFIG_ES_CLUSTERNAME))
+                    .build();
+            client = new TransportClient(settings);
+            String esHost = environment.getProperty(Constants.CONFIG_ES_HOST);
+            String[] hosts = esHost.split(",");
+            for (String host : hosts) {
+                String[] hostnameAndPort = host.split(":");
+                String hostname = hostnameAndPort[0];
+                Integer port = Integer.parseInt(hostnameAndPort[1]);
+                client = client.addTransportAddress(new InetSocketTransportAddress(hostname, port));
+            }
+            if (client.connectedNodes().size() == 0) {
+                throw new ConfigException(
+                        "No ES nodes avalaible !! Check the config or the ES cluster. ");
+            }
+            return client;
+        } catch (Exception ex) {
+            throw new ConfigException(ex.getMessage(), ex.getCause());
+        }
+    }
 }

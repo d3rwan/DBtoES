@@ -1,22 +1,22 @@
 {
-	"properties": {
-		"id": {
-			"type": "long"
-		},
-		"lastName": {
-			"type": "string", 
-			"analyzer" : "keyword",
-			"copy_to" : "autocomplete"
-		},
-		"firstName": {
-			"type": "string",
-			"analyzer" : "keyword",
-			"copy_to" : "autocomplete"
-		},
-		"autocomplete": {
-			"type": "string", 
-			"index_analyzer" : "completion",
-			"search_analyzer" : "keyword"
-		}
-	}
+    "properties": {
+        "id": {
+            "type": "long"
+        },
+        "lastName": {
+            "type": "string", 
+            "analyzer" : "keyword",
+            "copy_to" : "autocomplete"
+        },
+        "firstName": {
+            "type": "string",
+            "analyzer" : "keyword",
+            "copy_to" : "autocomplete"
+        },
+        "autocomplete": {
+            "type": "string", 
+            "index_analyzer" : "completion",
+            "search_analyzer" : "keyword"
+        }
+    }
 }

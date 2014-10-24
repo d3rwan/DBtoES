@@ -8,22 +8,22 @@ package com.github.d3rwan.dbtoes.exceptions;
  */
 public class ConfigException extends Exception {
 
-	/** Serial UID */
-	private static final long serialVersionUID = -1169104237151649103L;
+    /** Serial UID */
+    private static final long serialVersionUID = -1169104237151649103L;
 
-	public ConfigException() {
-		super();
-	}
+    public ConfigException() {
+        super();
+    }
 
-	public ConfigException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ConfigException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	public ConfigException(String message) {
-		super(message);
-	}
+    public ConfigException(String message) {
+        super(message);
+    }
 
-	public ConfigException(Throwable cause) {
-		super(cause);
-	}
+    public ConfigException(Throwable cause) {
+        super(cause);
+    }
 }
