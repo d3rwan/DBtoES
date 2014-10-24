@@ -1,0 +1,27 @@
+{
+	"index": {
+		"number_of_shards": 3,
+		"number_of_replicas": 0
+	},
+	"analysis": {
+		"analyzer": {
+			"keyword": {
+				"tokenizer": "keyword",
+				"filter": "lowercase"
+			},
+			"completion": {
+				"type": "custom",
+				"tokenizer": "standard",
+				"filter": [ "lowercase" , "nGram_filter" ]
+			}
+		},
+		"filter": {
+			"nGram_filter": {
+				"type": "nGram",
+				"min_gram": 2,
+				"max_gram": 6,
+				"token_chars": [ "letter" , "digit" ]
+			}
+		}
+	}
+}
